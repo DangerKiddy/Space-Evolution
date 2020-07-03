@@ -630,7 +630,7 @@ Model = Table of color for human's body
 	Hairs = Color of his hairs
 	
 
-
+```
 ### Not-processed block/resource table structure:
 ```
 x = x position of the block
