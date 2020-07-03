@@ -455,6 +455,13 @@ SpaceEvo.Items:AddCraftableItem(itemTbl)
 
 
 ```lua
+GM:SpaceEvo_OnItemCrafted(item)
+```
+*Calls when player crafts item in Craft menu*
+- item(Object's adding table): Item which was crafted
+
+
+```lua
 SpaceEvo.Objects:Create(objName, objBlockPos)
 ```
 *That function allows you to create any object which exists by default or was added by "SpaceEvo.Objects:AddNew" function*
@@ -480,6 +487,58 @@ GM:SpaceEvo_OnObjectCreated(objID, objName, objBlockPos)
 
 
 ## Other functions and hooks
+### Hooks
+```lua
+GM:SpaceEvo_PreFramePaint(panel, width, height)
+```
+*Calls before main frame was painted*
+
+
+```lua
+GM:SpaceEvo_BlockPaint(index, block, mousex, mousey, freeSpace)
+```
+*Calls when mouse over block and drawing block info*
+- index(int): Index of block in their global table
+- block(Block): Block's table
+- mousex(float): x position of mouse
+- mousey(float): y position of mouse with offset
+- freeSpace(float): Y Coordinate where you can place something yours 
+
+
+```lua
+GM:SpaceEvo_PostFramePaint(panel, w, h, rightY, leftY)
+```
+*Calls after main frame was painted*
+- panel(Panel): Main frame
+- w(int): Width
+- h(int): Height
+- rightY(int): Y Coordinate where you have free space to place something yours under the "Resources:" text
+- leftY(int): Same as above but at left, under "Planet:" text
+
+```lua
+GM:SpaceEvo_OnHumanSelected(human)
+```
+*Calls when player click on human and then on ground*
+
+
+```lua
+GM:SpaceEvo_PreSaveRemove()
+```
+*Calls before all saves being removed*
+
+
+```lua
+GM:SpaceEvo_PostSaveRemove()
+```
+*Calls after all saves was removed*
+
+
+```lua
+GM:SpaceEvo_OnMainFrameCreated(frame)
+```
+*Calls after SpaceEvo.MainFrame was created and loaded*
+
+
 ### Functions
 ```lua
 SpaceEvo.Circle(x, y, radius, segments, color)
