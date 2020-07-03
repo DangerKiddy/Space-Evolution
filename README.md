@@ -53,10 +53,10 @@ Example:
 ```lua
 -- Same as default seed generation
 hook.Add("SpaceEvo_CustomSeed", "TestSeed", function(Seed, ResourceSeed)
-	for i=0, 255 do
-		local num = math.random(255)
-		while table.HasValue(Seed, num) do
-			num = math.random(255)
+    for i=0, 255 do
+	local num = math.random(255)
+	while table.HasValue(Seed, num) do
+	    num = math.random(255)
         end
 	Seed[#Seed+1] = math.random(255)
     end
@@ -120,7 +120,7 @@ Example:
 -- in that hook you must return name of block and its color
 hook.Add("SpaceEvo_GenerateTerrain", "CustomGeneration", function(height, neighbors)
 	if height >= 0.5 and height <= SpaceEvo.MountainHeight then
-		return "Stone", Color(100,100,100)
+		return "Stone", Color(255*height,255*height,255*height)
 	end
 end)
 ```
@@ -130,7 +130,7 @@ end)
 GM:SpaceEvo_GenerateResources(BlockHeight, BlockSurface, Neighbors, PlanetName)
 ```
 *Same as hook above, but allows you to override default resource generation. You can add your own resources or just make default generation better.*
-Return same values as in hook above to override generation
+Return same values as in hook above to override generation. You can check your resource generation using sv_cheats 1
 - BlockHeight(float): Height of current block/pixel. You can see height of blocks alredy in game, or google more about Perlin noise
 - BlockSurface(Block): That table contains information of block on surface. You can find its structure in "Structures" section
 - Neighbors(table): Neighbors of block. You can find its structure in "Structures" section"
