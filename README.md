@@ -12,7 +12,7 @@ When human exploring the planet, he/she will search for useful resources, if he/
 Amount of exists resources you can see in top-right corner on your screen, you need these resources for crafting, and some of them(Food) for humans. Each planet have different amount of resources
 
 ## Planets
-Planets generates absolutely randomly, using perlin's noise and simple random functions. You can find over 1,000 planets, while playing this gamemode, some planets can be dry or flooded.
+Planets generates absolutely randomly, using perlin's noise and simple random functions. You can find over 2,000 planets, while playing this gamemode, some planets can be dry or flooded.
 
 # API
 You can modificate that gamemode as you want, you can change generation, behaivor of humans and so on
