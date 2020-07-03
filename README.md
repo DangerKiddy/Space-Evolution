@@ -582,6 +582,7 @@ SpaceEvo:ShadowText(text, font, x, y, color, alignx, aligny)
 SpaceEvo.Particle(pData)
 ```
 *Creates 2D particles on the screen*
+
 Example:
 ```lua
 -- that is how water particles was done
