@@ -585,21 +585,21 @@ SpaceEvo.Particle(pData)
 Example:
 ```lua
 -- that is how water particles was done
-				local velX, velY = SpaceEvo.Humans:GetVelocity(v)
-				SpaceEvo.Particle({
-					x = p.x,
-					y = p.y+10,
-					Spread = .1,
-					Dir = {x = velX, y = velY},//
-					Mat = nil,
-					Time = .25,
-					StartSize = 5,
-					EndSize = 3,
-					ColorStart = Color(100,155,255,100),
-					ColorEnd = Color(180,200,255,0),
-					Rotate = math.Rand(-.1, .1),
-					Amount = 1
-				})
+local velX, velY = SpaceEvo.Humans:GetVelocity(v)
+SpaceEvo.Particle({
+	x = p.x,
+	y = p.y+10,
+	Spread = .1,
+	Dir = {x = velX, y = velY},//
+	Mat = nil,
+	Time = .25,
+	StartSize = 5,
+	EndSize = 3,
+	ColorStart = Color(100,155,255,100),
+	ColorEnd = Color(180,200,255,0),
+	Rotate = math.Rand(-.1, .1),
+	Amount = 1
+})
 ```
 
 
