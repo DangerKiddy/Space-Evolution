@@ -739,3 +739,6 @@ BuildState = BuildState of object, not used much
 CurrentTask = Unused
 ```
 
+## Fonts
+There is only one font: "SpaceEvo_Pixel", which size goes from 3 to 50
+So, SpaceEvo_Pixel3, SpaceEvo_Pixel4, SpaceEvo_Pixel5, SpaceEvo_Pixel10, SpaceEvo_Pixel23, etc.
