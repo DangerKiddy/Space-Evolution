@@ -726,6 +726,7 @@ Name = Name of the object
 Paint = Paint function(x Position X, y Position Y, mx Mouse Position X, my Mouse Position Y) for the object
 IsMouseOver = function(x Position X, y Position Y, mx Mouse Position X, my Mouse Position Y), return true if mouse is over
 Think = function(self), Think function of object
+Click = function(self), calls when the player just clicks on an object
 
 Usable = bool, if usable, then when you're selecting human and then your object, you'll be able to press "Use Object" in popup menu 
 CanUse = function(self, human), Function which checks, can human use object
