@@ -17,6 +17,8 @@ Planets generates absolutely randomly, using perlin's noise and simple random fu
 # API
 You can modificate that gamemode as you want, you can change generation, behaivor of humans and so on
 
+**Everything is client side**
+
 **NOTE:** in some functions/hooks/globals can be used same things but with different names:
 - Pixel/Block
 - World/Planet
