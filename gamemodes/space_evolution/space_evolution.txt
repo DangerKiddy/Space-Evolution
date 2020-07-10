@@ -1,0 +1,13 @@
+"Gamemode"
+
+{
+	"base"		"base"
+	"title"		"Space Evolution"
+	"maps"		"^se_"
+	"menusystem"	"1"
+
+	"settings"
+	{
+
+	}
+}
