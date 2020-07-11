@@ -663,6 +663,8 @@ Sand = Color of the sand
 WaterAmount = Height of water. It's using in terrain generation: Height <=.1 and Height >= WaterAmount and "Sand" or "Water"
 Humans = Table of all humans on that planet
 Objects = Table of all objects on that planet
+Seed_Random = Table of 2 values for generating seed of surface. {min = 0, max = 255}. It will do ```lua math.random(Seed_Random.min, Seed_Random.max) ```
+SeedResource_Random = Table of 2 values for generating seed of resources. {min = 0, max = 255}. It will do ```lua math.random(SeedResource_Random.min, SeedResource_Random.max) ```
 
 Resources = Table of resources on that planet:
 Resources.Iron = Amount of iron
