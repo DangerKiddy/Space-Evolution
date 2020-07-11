@@ -12,6 +12,8 @@ SpaceEvo.Planets.earth = {
 	WaterAmount = 0,
 	Humans = {},
 	Objects = {},
+	Seed_Random = {min = 0, max = 255},
+	SeedResource_Random = {min = 0, max = 255},
 
 	Resources = {
 		Iron = 0,
