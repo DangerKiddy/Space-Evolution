@@ -109,8 +109,6 @@ local generated = {}
 local generated_resources = {}
 local wide = 100 // world's wide
 local WorldSize = 30 // actually, zoom
-SpaceEvo.MountainHeight = .75
-local MountainInt = SpaceEvo.MountainHeight // height for mountains
 local quadSize = 10 // size of one block
 
 // don't touch
@@ -147,25 +145,52 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
     end
 
     file.CreateDir("space_evolution/"..world.."/")
+
+    local planet = SpaceEvo.Planets[world]
     if not file.Exists("space_evolution/"..world.."/seed.txt", "DATA") then
+        local maxvalue = table.Random({2,10,50,125,255,10,50,125,255}) // something like weighted random, so "2" is rare
+        local seedMin, seedMax = planet and planet.Seed_Random and planet.Seed_Random.min or math.random(0,maxvalue), planet and planet.Seed_Random and planet.Seed_Random.max or math.random(0,maxvalue)
+        while seedMin == seedMax do
+            seedMin, seedMax = planet and planet.Seed_Random and planet.Seed_Random.min or math.random(0,maxvalue), planet and planet.Seed_Random and planet.Seed_Random.max or math.random(0,maxvalue)
+        end
+        if seedMax < seedMin then
+            seedMax, seedMin = seedMin, seedMax
+        end
+        SpaceEvo.Planets:Print("Generating seed's values - "..seedMin.." to "..seedMax)
+        
+        local maxvalue = table.Random({2,10,50,125,255,10,50,125,255}) // something like weighted random, so "2" is rare
+        local seedrMin, seedrMax = planet and planet.SeedResource_Random and planet.SeedResource_Random.min or math.random(0,maxvalue), planet and planet.SeedResource_Random and planet.SeedResource_Random.max or math.random(0,maxvalue)
+        if seedrMax < seedrMin then
+            seedrMax, seedrMin = seedrMin, seedrMax
+        end
+        local SeedValuesUnique = seedMin == 0 and seedMax == 255
+
         SpaceEvo.Planets:Print("Generating new planet...")
         hook.Run("SpaceEvo_NewPlanetGenerating", world, name, dontopen)
 
         local override = hook.Run("SpaceEvo_CustomSeed", permutation, permutation_res)
         if not override then
             for i=0, 255 do
-                local num = math.random(255)
-                while table.HasValue(permutation, num) do
-                    num = math.random(255)
+                local num = math.random(seedMin, seedMax)
+                if i != 255 and SeedValuesUnique then
+                    while table.HasValue(permutation, num) do
+                        num = math.random(seedMin, seedMax)
+                    end
+                else
+                    local chances = 0
+                    while num == (permutation[#permutation-1] or -1) and chances < 10 do
+                        num = math.random(seedMin, seedMax)
+                        if chances == 0 then
+                            SpaceEvo.Planets:Print("("..i.."/255)Trying to make terrain more pretty...")
+                        end
+                        chances = chances + 1
+                    end
                 end
-                permutation[#permutation+1] = math.random(255)
+                permutation[#permutation+1] = num
             end
             for i=0, 255 do
-                local num = math.random(255)
-                while table.HasValue(permutation_res, num) do
-                    num = math.random(255)
-                end
-                permutation_res[#permutation_res+1] = math.random(255)
+                local num = math.random(seedrMin, seedrMax)
+                permutation_res[#permutation_res+1] = num
             end
         end
         file.Write("space_evolution/"..world.."/seed.txt", util.TableToJSON({WorldSeed = permutation, ResourceSeed = permutation_res}))
@@ -201,12 +226,12 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
         end
     end
 
-    local planet = SpaceEvo.Planets[world]
     local Hills = planet and planet.Hills or HSVToColor(math.random(360), 1, .75)//Color(0,255,0)
     local Water = planet and planet.Water or Color(math.random(100),math.random(100),150)
     local Sand = planet and planet.Sand or HSVToColor(math.random(0, 120), .5, .9)//Color(255,255,0)
     local Mountain = color_white
     local WaterInt = planet and planet.WaterAmount or math.Rand(-1,1)
+    local MountainInt = world == "earth" and .75 or planet and planet.MountainInt or math.Rand(0, 1) // height for mountains
 
     if not planet or not file.Exists("space_evolution/"..world.."/planet.txt", "DATA") then
         SpaceEvo.Planets[world] = {
@@ -215,6 +240,7 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
             Water = Water,
             Sand = Sand,
             WaterAmount = WaterInt,
+            MountainInt = MountainInt,
             Humans = {},
             Objects = {},
 
@@ -237,13 +263,13 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
         }
 
         local customGeneration, customGenerationColor = hook.Run("SpaceEvo_GenerateTerrain", v, neigh, world)
-        local typ = customGeneration or v >= MountainInt and "Mountain" or (v > .1 and v < MountainInt and "Hills") or
+        local typ = customGeneration or v >= MountainInt and "Snow" or (v > .1 and v < MountainInt and "Hills") or
             v <=.1 and v >= WaterInt and "Sand" or "Water"
 
         World[k] = {
             x = x,
             y = y,
-            color = customGeneration and customGenerationColor or typ == "Mountain" and Color(Mountain.r*(v2+.2),Mountain.g*(v2+.2),Mountain.b*(v2+.2)) or
+            color = customGeneration and customGenerationColor or typ == "Snow" and Color(Mountain.r*(v2+.2),Mountain.g*(v2+.2),Mountain.b*(v2+.2)) or
                 typ == "Hills" and Color(Hills.r,Hills.g*v2,Hills.b) or
                 typ == "Sand" and Color(Sand.r*(v2+.3),Sand.g*(v2+.3),Sand.b) or
                 typ == "Water" and Color(Water.r, Water.g, Water.b*(1.2-v2)) or color_black,
@@ -275,7 +301,7 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
             bottom = k+wide
         }
         local customResource, customResourceColor = hook.Run("SpaceEvo_GenerateResources", v, World[k], neigh, world)
-        local typ = customResource or v >= .5 and "Oil" or v < .3 and v > .2 and World[k].typ == "Hills" and "Forest" or v <= .05 and v >= -.05 and World[k].typ != "Sand" and "Food" or
+        local typ = customResource or v >= .5 and "Oil" or v < .3 and v > .2 and World[k].typ == "Hills" and "Forest" or v <= .05 and v >= -.05 and World[k].typ != "Sand" and (World[k].typ == "Snow" and math.random(100)<25) and "Food" or
            v <= -.40 and "Iron" or "Nothing"
 
         Resources[k] = {
