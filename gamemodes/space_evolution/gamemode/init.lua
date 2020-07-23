@@ -13,6 +13,12 @@ for k, v in pairs(cl_files) do
 	AddCSLuaFile(cl..v)
 end
 
+function GM:PlayerSpawn(ply)
+	//ply:Freeze(true)
+	ply:SetNoDraw(true)
+	ply:SetPos(Vector(0,0,11000))
+end
+
 function GM:EntityTakeDamage()
 	return true
 end
@@ -20,3 +26,4 @@ end
 function GM:PlayerShouldTakeDamage()
 	return false
 end
+Entity(1):Freeze(false)

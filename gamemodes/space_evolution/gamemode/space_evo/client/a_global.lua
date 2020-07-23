@@ -10,6 +10,7 @@ end
 
 function SpaceEvo:SaveGame()
 	if SpaceEvo.Removing then return end
+	if SpaceEvo.CantSave then return end
 	hook.Run("SpaceEvo_PreSave")
 	file.Write("space_evolution/items.dat", util.TableToJSON(SpaceEvo.Items.Storage))
 	SpaceEvo.Planets:SavePlanet(SpaceEvo.CurrentWorld)

@@ -20,6 +20,45 @@ local ScrH = ScrH
 
 CreateConVar("spaceevo_particles", 1, FCVAR_ARCHIVE)
 
+local function PrintRainbowText( frequency, str )
+
+	local text = {}
+	local len = #text
+
+	for i = 1, #str do
+		text[len + 1] = HSVToColor( i * frequency % 360, 1, 1 )
+		text[len + 2] = string.sub( str, i, i )
+		len = len + 2
+	end
+
+	-- Print to chat, also prints to console
+	chat.AddText( unpack( text ) )
+
+	-- Uncomment this to print to console only, works serverside too
+	-- MsgC( unpack( text ) )
+
+end
+local function DrawRainbowText( frequency, str, font, x, y )
+	surface.SetFont( font )
+	surface.SetTextPos( x, y )
+
+	for i = 1, #str do
+		local col = HSVToColor( i * frequency % 360, 1, 1 ) -- Providing 3 numbers to surface.SetTextColor rather
+		surface.SetTextColor( col.r, col.g, col.b )			-- than a single color is faster
+		surface.DrawText( string.sub( str, i, i ) )
+	end
+end
+
+local function DrawTexturedRectRotatedPoint( x, y, w, h, rot, x0, y0 )	
+	local c = math.cos( math.rad( rot ) )
+	local s = math.sin( math.rad( rot ) )
+				
+	local newx = y0 * s - x0 * c
+	local newy = y0 * c + x0 * s
+							
+	surface.DrawTexturedRectRotated( x + newx, y + newy, w, h, rot )
+end
+
 function SpaceEvo.Circle( x, y, radius, seg, col )
 	local cir = {}
 
@@ -74,6 +113,23 @@ local function Closest(vec, vectors)
 	local closest, closestindex
 	for k, v in ipairs(vectors) do
 		local d = v:DistToSqr(vec)
+		if d < dist then
+			closest = v
+			closestindex = k
+
+			dist = d
+		end
+	end
+
+	return closest, closestindex
+end
+
+local function Closest2D(p, vectors) // used for intract with world
+	local dist = math.huge
+	local closest, closestindex
+	for k, v in ipairs(vectors) do
+		local pp = v:ToScreen()
+		local d = math.Distance(p.x, p.y, pp.x, pp.y)
 		if d < dist then
 			closest = v
 			closestindex = k
@@ -161,7 +217,7 @@ end
 local function position()
 	local camPos = SpaceEvo.CamPos or Vector()
 	local v = Vector(0,0,-12250)
-    local normal = (camPos - v):GetNormalized()
+    local normal = (v - camPos):GetNormalized()
     local hitpos = util.IntersectRayWithPlane( camPos, gui.ScreenToVector( input.GetCursorPos() ), v, normal )
     return hitpos
 end
@@ -189,6 +245,7 @@ local shirt = Material("space_evolution/shirt.png")
 local shoes = Material("space_evolution/shoes.png")
 local hairs = Material("space_evolution/hairs.png")
 local star = Material("space_evolution/star.png")
+local ghost = Material("space_evolution/ghost.png")
 
 SpaceEvo.CursorPos = {x = 0, y = 0}
 
@@ -197,7 +254,7 @@ local function CreateFrame()
 	if IsValid(SpaceEvo.MainFrame) then
 		SpaceEvo.MainFrame:Remove()
 	end
-	
+
 	SpaceEvo.MainFrame = vgui.Create("DFrame")
 	local frm = SpaceEvo.MainFrame
 	frm:SetSize(ScrW(), ScrH())
@@ -220,7 +277,357 @@ local function CreateFrame()
 		end)
 	end
 	RunStar()
+
+	timer.Create("somethingInteresting :)", 30, 0, function()
+		local r = math.random(1, 1000)
+		if r == 2 and #SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans >= 50 then
+			if SpaceEvo.ActiveEaster then return end
+			SpaceEvo.ActiveEaster = {}
+			SpaceEvo.ActiveEaster.Name = "Dragon Ball"
+			if IsValid(Playing) then Playing:Stop() end
+			Playing = nil
+			SpaceEvo.CantSave = true
+
+			local g
+			for k, v in ipairs(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans) do
+				if v.Task == "Wanders" and v.Sex == "Male" then
+					v.Goku = true
+					v.Task = "About to kill all stopid humans"
+					g = v
+					break
+				end
+			end
+			if not g then SpaceEvo.CantSave = false SpaceEvo.ActiveEaster = nil return end
+			sound.PlayFile("sound/space_evolution/sound3.mp3", "noplay", function(station, errCode, errStr)
+				if IsValid(station) then
+					if IsValid(Playing) then
+						Playing:Stop()
+					end
+					Playing = station
+					Playing:Play()
+					Playing:SetVolume(1)
+				end
+			end)
+
+			local w = 0
+			local whiteThing = CurTime()
+			local time = CurTime()
+			local set = false
+			local AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA = CurTime() + 30.5
+			local nextParticle = CurTime()
+			local scream = CurTime() + 37
+			local screamH = 0
+			local boom = CurTime() + 16.7
+			local screaming = false
+			local endScream = false
+			local st0pid
+
+			local pos
+			hook.Add("SpaceEvo_PreHumanPaint", "DragonBallEaster", function(po, hum)
+				if not hum.Goku then return end
+				if not pos then pos = po end
+
+				local a = math.Remap(math.Clamp(whiteThing - CurTime(), 0, 3), 0, 3, 0, 255)
+				if w >= 29.5 then
+					w = Lerp(FrameTime()*10, w, ScrW())
+					if not set then
+						whiteThing = CurTime() + 3
+						time = CurTime()
+						set = true
+					end
+					draw.RoundedBox(0, ScrW()/2 - w/2, 0, w, ScrH(), Color(255,255,255,(whiteThing - time) == 0 and 255 or a))
+				elseif w < 29.5 and CurTime() >= AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA then
+					set = false
+					whiteThing = CurTime()
+					time = CurTime()
+					w = Lerp(FrameTime()*2, w, 30)
+					draw.RoundedBox(0, pos.x - w/2, 0, w, ScrH(), Color(255,255,255,(whiteThing - time) == 0 and 255 or a))
+				end
+				if CurTime() >= nextParticle then
+					if CurTime() >= boom then
+						SpaceEvo.Particle({
+							x = pos.x,
+							y = pos.y,
+							Spread = .1,
+							Dir = {x = 0, y = 0},//
+							Mat = nil,
+							Time = 1,
+							StartSize = 10,
+							EndSize = 7,
+							ColorStart = Color(234,103,255,100),
+							ColorEnd = Color(255,255,255,0),
+							Rotate = math.Rand(-.1, .1),
+							Amount = 3
+						})
+
+						SpaceEvo.Particle({
+							x = pos.x,
+							y = pos.y+5,
+							Spread = .1,
+							Dir = {x = .1, y = 0},//
+							Mat = nil,
+							Time = 1,
+							StartSize = 5,
+							EndSize = 0,
+							ColorStart = Color(176,112,255,100),
+							ColorEnd = Color(255,255,255,0),
+							Rotate = math.Rand(-.1, .1),
+							Amount = 3
+						})
+						SpaceEvo.Particle({
+							x = pos.x,
+							y = pos.y+5,
+							Spread = .1,
+							Dir = {x = -.1, y = 0},//
+							Mat = nil,
+							Time = 1,
+							StartSize = 5,
+							EndSize = 0,
+							ColorStart = Color(176,112,255,100),
+							ColorEnd = Color(255,255,255,0),
+							Rotate = math.Rand(-.1, .1),
+							Amount = 3
+						})
+					else
+						SpaceEvo.Particle({
+							x = pos.x,
+							y = pos.y,
+							Spread = .1,
+							Dir = {x = 0, y = -.05},//
+							Mat = nil,
+							Time = 1,
+							StartSize = 5,
+							EndSize = 3,
+							ColorStart = Color(255,255,255,50),
+							ColorEnd = Color(0,0,0,0),
+							Rotate = math.Rand(-.1, .1),
+							Amount = 3
+						})
+					end
+					if (whiteThing - time) != 0 then
+						SpaceEvo.Particle({
+							x = pos.x,
+							y = pos.y,
+							Spread = .1,
+							Dir = {x = 0, y = -.5},//
+							Mat = nil,
+							Time = .3,
+							StartSize = 10,
+							EndSize = 7,
+							Speed = 200,
+							ColorStart = Color(134,103,255,100),
+							ColorEnd = Color(255,255,255,0),
+							Rotate = math.Rand(-.1, .1),
+							Amount = 3
+						})
+						SpaceEvo.Particle({
+							x = pos.x,
+							y = pos.y,
+							Spread = .1,
+							Dir = {x = 0, y = 0},//
+							Mat = nil,
+							Time = 1,
+							StartSize = 7,
+							EndSize = 5,
+							Speed = 300,
+							ColorStart = Color(134,103,255,100),
+							ColorEnd = Color(255,255,255,0),
+							Rotate = math.Rand(-.1, .1),
+							Amount = 3
+						})
+
+						pos.x, pos.y = Lerp(FrameTime()*50, pos.x, math.sin(CurTime())*100+(math.sin(CurTime())*100)+ScrW()/2), Lerp(FrameTime()*50, pos.y, ((math.cos(CurTime())*100)*math.sin(CurTime()))+ScrH()/2)
+						hum.Pos2 = pos
+					end
+
+					nextParticle = CurTime() + .05
+				end
+
+				if CurTime() >= scream then
+					if not screaming then
+						surface.PlaySound("space_evolution/sound4.mp3")
+
+						for k, v in ipairs(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans) do
+							if v.Goku then continue end
+							if not st0pid or v.IQ < st0pid.IQ then
+								st0pid = v
+							end
+						end
+
+						fire = CurTime() + 2.5
+						screaming = true
+					else
+						if CurTime() >= fire then
+							local p = SpaceEvo.Humans:GetScreenPos(st0pid)
+							if screamH >= 15.8 and not endScream then
+								endScream = true
+								SpaceEvo.Humans:Kill(st0pid.uniqueID, true, {Color(255,0,0), " was killed by Goku???"})
+							end
+							if not endScream then
+								screamH = Lerp(FrameTime(), screamH, 16)
+							else
+								screamH = Lerp(FrameTime(), screamH, ScrW())
+								if math.ceil(screamH) >= ScrW() then
+									screaming = false
+									screamH = 0
+									scream = CurTime() + 10
+									endScream = false
+									st0pid = nil
+								end
+							end
+							draw.NoTexture()
+							surface.SetDrawColor(Color(255,255,255, !endScream and math.Remap(screamH, 0, 16, 0, 255) or math.Remap(screamH, 0, ScrW(), 255, 0)))
+							local an = (Vector(pos.x, pos.y) - Vector(p.x, p.y)):Angle()
+							DrawTexturedRectRotatedPoint( pos.x, pos.y, ScrW(), screamH, -an.y, ScrW()/2, 0 )
+						end
+					end
+				end
+			end)
+			function SpaceEvo.ActiveEaster:Remove()
+				g.Goku = false
+				SpaceEvo.Humans:Kill(g.uniqueID, true, {Color(255,0,0), " just now suicided"})
+				if IsValid(Playing) then Playing:Stop() end
+				hook.Remove("SpaceEvo_PreHumanPaint", "DragonBallEaster")
+				SpaceEvo.CantSave = false
+				SpaceEvo.ActiveEaster = nil
+			end
+
+			timer.Simple(86, function()
+				SpaceEvo.ActiveEaster:Remove()
+			end)
+		elseif r >= 50 and r <= 200 then
+			local x, y = -70, ScrH()/3
+			local boo = false
+			local scared = false
+			local scare = CurTime() + 5
+			hook.Add("SpaceEvo_PostFramePaint", "gmodParty13", function(pnl, w, h)
+				if not boo then
+					x = Lerp(FrameTime()*2, x, 3)
+					if CurTime() >= scare then
+						surface.PlaySound("space_evolution/boo.wav")
+						scare = CurTime() + math.random(2,10)
+					end
+				else
+					x = Lerp(FrameTime()*2, x, -70)
+				end
+
+				surface.SetDrawColor(color_white)
+				surface.SetMaterial(ghost)
+				surface.DrawTexturedRectRotated(x, y, 70, 70, math.Remap(x, -70, 3, 0, -45))
+
+				local mx, my = input.GetCursorPos()
+				if math.Distance(x, y, mx, my) <= 70 then
+					boo = true
+					if not scared then
+						surface.PlaySound("space_evolution/scared.wav")
+						timer.Simple(5, function()
+							hook.Remove("SpaceEvo_PostFramePaint", "gmodParty13")
+						end)
+						scared = true
+					end
+				end
+			end)
+		elseif r == 1 then
+			if #SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans >= 10 then
+				PrintRainbowText( 20, "Party time!" )
+				for k, v in ipairs(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans) do
+					v.RememberTask = v.Task
+
+					v.RandomSpin = table.Random({-1, 1})
+
+					v.Task = table.Random({"OwO"})
+					timer.Simple(23, function()
+						if v then
+							v.Task = v.RememberTask
+						end
+					end)
+				end
+
+				if SpaceEvo.ActiveEaster then return end
+
+				SpaceEvo.ActiveEaster = {}
+				SpaceEvo.ActiveEaster.Name = "Party time"
+
+				if IsValid(Playing) then Playing:Stop() end
+				Playing = nil
+
+				sound.PlayFile("sound/space_evolution/sound1.mp3", "noplay", function(station, errCode, errStr)
+					if IsValid(station) then
+						if IsValid(Playing) then
+							Playing:Stop()
+						end
+						Playing = station
+						Playing:Play()
+						Playing:SetVolume(1)
+					end
+				end)
+
+				local DFT = {}
+				local dft = {}
+				hook.Add("Tick", "BestParty", function()
+					if IsValid(Playing) then
+						Playing:FFT(dft, FFT_256)
+						for k, v in pairs(dft) do
+							DFT[k] = !DFT[k] and 0 or Lerp(1, DFT[k], v)
+						end
+					end
+				end)
+
+				local nextCol = CurTime()
+
+				local Cols = {
+					Color(255,0,0, 10),
+					Color(255,0,255, 10),
+					Color(0,255,0, 10),
+					Color(0,255,255, 10)
+				}
+				local col = 1
+				local pos = -ScrW()
+				surface.SetFont("SpaceEvo_Pixel20")
+				local s = surface.GetTextSize("Party time!")
+				hook.Add("SpaceEvo_PostFramePaint", "BestParty", function()
+					if (!IsValid(Playing) or Playing:GetState() != GMOD_CHANNEL_PLAYING) then return end
+					pos = Lerp(FrameTime()*10, pos, ScrW()/2 - s/2)
+					DrawRainbowText( 20, "Party time!", "SpaceEvo_Pixel20", pos, ScrH()/4 )
+					local heigh = 160
+					local wi = 5
+					local x = ScrW()/2
+					if col > #Cols then col = 1 end
+					draw.RoundedBox(0, 0, 0, ScrW(), ScrH(), Cols[col])
+					local v = DFT[2] or 0
+					if (v*2) < .78 then return end
+						
+					if CurTime() >= nextCol then
+						col = col + 1
+						nextCol = CurTime() + .3
+					end
+				end)
+
+				SpaceEvo.CantSave = true
+				timer.Simple(23, function()
+					SpaceEvo.ActiveEaster:Remove()
+				end)
+				function SpaceEvo.ActiveEaster:Remove()
+					if IsValid(Playing) then Playing:Stop() end
+					hook.Remove("Tick", "BestParty")
+					hook.Remove("SpaceEvo_PostFramePaint", "BestParty")
+					SpaceEvo.CantSave = false
+					SpaceEvo.ActiveEaster = nil
+				end
+			end
+		end
+	end)
+	
+	local pausechech = 0
+	frm.PauseCheck = 0
 	frm.Paint = function(s, w, h)
+		if frm.PauseCheck == CurTime() then
+			pausechech = pausechech + 1
+			frm.IsPaused = pausechech > 10
+		else
+			frm.IsPaused = false
+		end
+		frm.PauseCheck = CurTime()
 		if not SpaceEvo.Planets then return end
 		local d = (math.Round((SpaceEvo.CamPos or Vector()):Distance(Vector(0,0,-11500))))
 		if (d) > 0 then return end
@@ -232,25 +639,6 @@ local function CreateFrame()
 			surface.SetDrawColor(color_white)
 			surface.SetMaterial(star)
 			surface.DrawTexturedRectRotated(fallingStar.x, fallingStar.y, 48, 48, 0)
-		end
-
-		if GetConVar("spaceevo_particles"):GetBool() then
-			for k, v in ipairs(particles) do
-				if CurTime() > v.Dead then table.remove(particles, k) continue end
-				if not v.Mat then draw.NoTexture() else surface.SetMaterial(v.Mat) end
-
-				v.x = v.x + v.Dir.x*FrameTime()*300
-				v.y = v.y + v.Dir.y*FrameTime()*300
-				local r = math.Remap(v.Dead - CurTime(), 0, v.Time, v.ColorEnd.r, v.ColorStart.r)
-				local g = math.Remap(v.Dead - CurTime(), 0, v.Time, v.ColorEnd.g, v.ColorStart.g)
-				local b = math.Remap(v.Dead - CurTime(), 0, v.Time, v.ColorEnd.b, v.ColorStart.b)
-				local a = math.Remap(v.Dead - CurTime(), 0, v.Time, v.ColorEnd.a, v.ColorStart.a)
-				local size = math.Remap(v.Dead - CurTime(), 0, v.Time, v.EndSize, v.StartSize)
-				v.pRotate = v.pRotate + v.Rotate
-
-				surface.SetDrawColor(r, g, b, a)
-				surface.DrawTexturedRectRotated(v.x, v.y, size, size, v.pRotate)
-			end
 		end
 
 		draw.NoTexture()
@@ -274,13 +662,32 @@ local function CreateFrame()
 		end
 		Obj = obj
 
+		if GetConVar("spaceevo_particles"):GetBool() then
+			for k, v in ipairs(particles) do
+				if CurTime() > v.Dead then table.remove(particles, k) continue end
+				if not v.Mat then draw.NoTexture() else surface.SetMaterial(v.Mat) end
+
+				v.x = v.x + v.Dir.x*FrameTime()*(v.Speed or 300)
+				v.y = v.y + v.Dir.y*FrameTime()*(v.Speed or 300)
+				local r = math.Remap(v.Dead - CurTime(), 0, v.Time, v.ColorEnd.r, v.ColorStart.r)
+				local g = math.Remap(v.Dead - CurTime(), 0, v.Time, v.ColorEnd.g, v.ColorStart.g)
+				local b = math.Remap(v.Dead - CurTime(), 0, v.Time, v.ColorEnd.b, v.ColorStart.b)
+				local a = math.Remap(v.Dead - CurTime(), 0, v.Time, v.ColorEnd.a, v.ColorStart.a)
+				local size = math.Remap(v.Dead - CurTime(), 0, v.Time, v.EndSize, v.StartSize)
+				v.pRotate = v.pRotate + v.Rotate
+
+				surface.SetDrawColor(r, g, b, a)
+				surface.DrawTexturedRectRotated(v.x, v.y, size, size, v.pRotate)
+			end
+		end
+
 		local hum = false
 		local smartestHuman = {iq = 0, name = "", col}
 		for k, v in ipairs(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans) do
 			if v.DontDraw then continue end
 			local x, y = v.Pos.x, v.Pos.y
 			local pos = SpaceEvo.WorldPos + Vector(x*10, y*10)
-			local p = (pos+Vector(5,5)):ToScreen()
+			local p = v.Pos2 or (pos+Vector(5,5)):ToScreen()
 
 
 			if not v.NextWaterCheck or v.NextWaterCheck < CurTime() or v.NextWaterCheck - CurTime() >= 100 then
@@ -288,54 +695,60 @@ local function CreateFrame()
 				v.InWater = SpaceEvo.GeneratedWorld.WorldMesh[i].Type == "Water"
 				v.NextWaterCheck = CurTime() + 1 + (k/(#SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans*2))
 			end
+			local UwU = v.Task == "OwO" and (CurTime()*360*v.RandomSpin) or 0
+			hook.Run("SpaceEvo_PreHumanPaint", p, v)
 			if not v.InWater then
 				surface.SetDrawColor(v.Model.Body)
 				surface.SetMaterial(body)
-				surface.DrawTexturedRectRotated(p.x, p.y, 25, 25, 0)
+				surface.DrawTexturedRectRotated(p.x, p.y, 25, 25, UwU)
 
 				surface.SetDrawColor(v.Model.Shirt)
 				surface.SetMaterial(shirt)
-				surface.DrawTexturedRectRotated(p.x, p.y, 25, 25, 0)
+				surface.DrawTexturedRectRotated(p.x, p.y, 25, 25, UwU)
 
 				surface.SetDrawColor(255,255,255)
 				surface.SetMaterial(shoes)
-				surface.DrawTexturedRectRotated(p.x, p.y, 25, 25, 0)
+				surface.DrawTexturedRectRotated(p.x, p.y, 25, 25, UwU)
 
 				surface.SetDrawColor(v.Model.Pants)
 				surface.SetMaterial(pants)
-				surface.DrawTexturedRectRotated(p.x, p.y, 25, 25, 0)
+				surface.DrawTexturedRectRotated(p.x, p.y, 25, 25, UwU)
 			else
 				local velX, velY = SpaceEvo.Humans:GetVelocity(v)
 				local w = SpaceEvo.Planets[SpaceEvo.CurrentWorld].Water
-				SpaceEvo.Particle({
-					x = p.x,
-					y = p.y+10,
-					Spread = .1,
-					Dir = {x = velX, y = velY},//
-					Mat = nil,
-					Time = .25,
-					StartSize = 5,
-					EndSize = 3,
-					ColorStart = Color(w.r, w.g, w.b,100),
-					ColorEnd = Color(200,200,200,0),
-					Rotate = math.Rand(-.1, .1),
-					Amount = 1
-				})
+
+				if not frm.IsPaused then
+					SpaceEvo.Particle({
+						x = p.x,
+						y = p.y+10,
+						Spread = .1,
+						Dir = {x = velX, y = velY},//
+						Mat = nil,
+						Time = .25,
+						StartSize = 5,
+						EndSize = 3,
+						ColorStart = Color(w.r, w.g, w.b,100),
+						ColorEnd = Color(200,200,200,0),
+						Rotate = math.Rand(-.1, .1),
+						Amount = 1
+					})
+				end
 
 				surface.SetDrawColor(v.Model.Body)
 				surface.SetMaterial(body)
-				surface.DrawTexturedRectRotated(p.x, p.y+10, 25, 25, 0)
+				surface.DrawTexturedRectRotated(p.x, p.y+10, 25, 25, UwU)
 
 				surface.SetDrawColor(v.Model.Shirt)
 				surface.SetMaterial(shirt)
-				surface.DrawTexturedRectRotated(p.x, p.y+10, 25, 25, 0)
+				surface.DrawTexturedRectRotated(p.x, p.y+10, 25, 25, UwU)
 			end
 
 			if v.Sex == "Female" then
 				surface.SetDrawColor(v.Model.Hairs)
 				surface.SetMaterial(hairs)
-				surface.DrawTexturedRectRotated(p.x, p.y+(v.InWater and 10 or 0), 25, 25, 0)
+				surface.DrawTexturedRectRotated(p.x, p.y+(v.InWater and 10 or 0), 25, 25, UwU)
 			end
+			hook.Run("SpaceEvo_PostHumanPaint", p, v)
 
 			if math.Distance(p.x, p.y, c.x, c.y) <= 25 then
 				hum = v
@@ -356,8 +769,9 @@ local function CreateFrame()
 		end
 		Human = hum
 
-		local vec, i = Closest(c.pos, w_mesh)
-		if vec:DistToSqr(c.pos) >= 5000 or hum then
+		local vec, i = Closest2D(c, w_mesh)
+		local pp = vec:ToScreen()
+		if math.Distance(pp.x, pp.y, c.x, c.y) >= 50 or hum then
 			activePixel = nil
 			SpaceEvo.CursorPos = c
 			SpaceEvo.Circle( c.x, c.y, 5, 30, color_white )
@@ -422,8 +836,9 @@ local function CreateFrame()
 				HumanSelected = Human
 			end
 		elseif HumanSelected and activePixel then
-			surface.PlaySound("space_evolution/human_click2.wav")
 			local t = HumanSelected
+			if t.Goku then return end
+			surface.PlaySound("space_evolution/human_click2.wav")
 			local humID = Human
 			local m = DermaMenu() 
 			m:AddOption(t.FirstName.." "..t.LastName, function()
@@ -550,6 +965,79 @@ local function CreateFrame()
 					end):SetIcon("icon16/cog.png")
 				end
 			end
+			if math.random(100) == 1 and #SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans >= 10 then
+				m:AddOption("Turn into a God", function()
+					if SpaceEvo.ActiveEaster then return end
+
+					SpaceEvo.ActiveEaster = {}
+					SpaceEvo.ActiveEaster.Name = "Jebaited"
+
+					if IsValid(Playing) then Playing:Stop() end
+					Playing = nil
+
+					sound.PlayFile("sound/space_evolution/sound2.mp3", "noplay", function(station, errCode, errStr)
+						if IsValid(station) then
+							if IsValid(Playing) then
+								Playing:Stop()
+							end
+							Playing = station
+							Playing:Play()
+							Playing:SetVolume(1)
+						end
+					end)
+					local go = false
+					timer.Simple(2.5, function() go = true end)
+					timer.Simple(37, function() go = false end)
+
+					local train = Material("space_evolution/train.png")
+					local wagon = Material("space_evolution/wagon.png")
+					local je = Material("space_evolution/je.png")
+					local size = 2.5
+					local tPos = -48*size
+
+					local jeL = -128
+					local jeR = ScrW()+128
+					hook.Add("HUDPaint", "PaintJebaited", function()
+						if go then
+							tPos = tPos + FrameTime()*650
+
+							jeL = Lerp(FrameTime()*1, jeL, 10)
+							jeR = Lerp(FrameTime()*1, jeR, ScrW()-130)
+						else
+							jeL = Lerp(FrameTime()*1, jeL, -256)
+							jeR = Lerp(FrameTime()*1, jeR, ScrW()+128)
+						end
+						surface.SetMaterial(je)
+						surface.SetDrawColor(color_white)
+
+						surface.DrawTexturedRect(jeL, (ScrH()/2)+130, 128, 128)
+						surface.DrawTexturedRect(jeR, (ScrH()/2)+130, 128, 128)
+
+						local yPos = ScrH()/2 - (20*size)/2
+
+						surface.SetMaterial(train)
+						surface.DrawTexturedRect(tPos, yPos, 48*size, 20*size, 0)
+
+						surface.SetMaterial(wagon)
+						for i=1,math.ceil(ScrW()/7.3) do
+							surface.DrawTexturedRect(tPos - ((30*size)*i), yPos, 30*size, 20*size, 0)
+						end
+						for k, v in ipairs(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans) do
+							local p = SpaceEvo.Humans:GetScreenPos(v)
+							if p.x <= tPos and (p.y >= (ScrH()/2) - 5 and p.y <= (ScrH()/2) + 5) then
+								SpaceEvo.Humans:Kill(v.uniqueID, true, {Color(255,0,0), " Hit by train"})
+							end
+						end
+					end)
+
+					function SpaceEvo.ActiveEaster:Remove()
+						if IsValid(Playing) then Playing:Stop() end
+						hook.Remove("HUDPaint", "PaintJebaited")
+						SpaceEvo.ActiveEaster = nil
+					end
+					timer.Simple(40, function() if SpaceEvo.ActiveEaster.Name != "Jebaited" then return end SpaceEvo.ActiveEaster:Remove() end)
+				end):SetIcon("icon16/lightning.png")
+			end
 			m:AddOption("Close"):SetIcon("icon16/cancel.png")
 			m:Open()
 			HumanSelected = nil
@@ -566,10 +1054,9 @@ local function CreateFrame()
 			end
 		end
 
-		local mx, my = input.GetCursorPos()
 		local cursor = position()
 		if not cursor then return end
-		c = cursor:ToScreen()
+		c = {x = gui.MouseX(), y = gui.MouseY()}
 		c.pos = cursor
 
 		if SpaceEvo.Removing then return end
@@ -641,6 +1128,8 @@ local function CreateFrame()
 					WaterAmount = 0,
 					Humans = {},
 					Objects = {},
+					Seed_Random = {min = 0, max = 255},
+					SeedResource_Random = {min = 0, max = 255},
 
 					Resources = {
 						Iron = 0,
@@ -704,6 +1193,7 @@ local function CreateFrame()
 		surface.PlaySound("space_evolution/btn_over.wav")
 	end
 	Save.DoClick = function()
+		if SpaceEvo.CantSave then chat.AddText(Color(255,0,0), "You can't do it right now!") return end
 		SpaceEvo:SaveGame()
 		surface.PlaySound("space_evolution/success.wav")
 	end

@@ -22,7 +22,7 @@ SpaceEvo.Planets.earth = {
 		Food = 50
 	}
 }
-
+PrintTable(SpaceEvo.Planets.earth)
 SpaceEvo.RandomPlanets1 = {
 	"Ave", "Roid", "Heso", "Yamo", "Ea", "Ki", "Jo", "Halo", "Gero", "Mano", "Fero", "We", "Qu", "Yo", "Reko", "Fano", "Dedo", "Beo", "Dio", "Ero", "Dai", "Toshi", "Mizu", "Hi", "Tsuchi", "Nando", "Multi", "Keda",
 	"Veor", "Weist", "Lora", "Madero", "Io", "Le", "Kero", "Sero", "Mero", "Dea", "Veso", "Ze", "Xo", "No", "Qor", "Kek", "Meno", "Bio", "Ame", "Gov", "Jeri", "De", "Ve", "Ind", "Sis", "So", "Loe", "Out", "Her"
@@ -49,7 +49,7 @@ SpaceEvo.Planets:Print("Maximum possible planets: "..SpaceEvo.Planets.Maximum)
 function SpaceEvo.Planets:GenerateNewPlanet()
 	if SpaceEvo.Removing then return end
 	local name = select(1, table.Random(SpaceEvo.RandomPlanets1))..select(1, table.Random(SpaceEvo.RandomPlanets2))
-	if SpaceEvo.Planets[name] then
+	if file.Exists("space_evolution/"..name:lower().."/seed.txt", "DATA") then
 		return SpaceEvo:GenerateNewPlanet()
 	end
 	return SpaceEvo:GenerateWorld(name:lower(), name, true)

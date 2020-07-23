@@ -144,12 +144,13 @@ SpaceEvo.Objects = {
 			self.NextThink = self.NextThink or CurTime()
 			self.Humans = self.Humans or {}
 
-			if self.NextThink > CurTime() and self.NextThink - CurTime() >= 20 then self.NextThink = CurTime() end
+			if self.NextThink > CurTime() and self.NextThink - CurTime() >= 15 then self.NextThink = CurTime() end
 
 			if self.NextThink <= CurTime() then
 				if #self.Humans == 2 then
 					local brk = false
 					local lastname = ""
+					local gender
 					for k, v in ipairs(self.Humans) do
 						local human = SpaceEvo.Humans:FindByID(v)
 						if not human then
@@ -157,6 +158,17 @@ SpaceEvo.Objects = {
 							continue
 						end
 						if brk then human.DontDraw = nil continue end
+
+						if not gender then gender = human.Sex else
+							if human.Sex == gender then
+								human.DontDraw = nil
+								human.Task = nil
+								human.NextTask = nil
+								human.Use = nil
+								human.Target = nil
+								return
+							end
+						end
 						if human.Sex == "Male" then
 							lastname = human.LastName
 						end
@@ -192,10 +204,11 @@ SpaceEvo.Objects = {
 							chat.AddText(male.Model.Shirt, male.FirstName.." "..male.LastName, color_white, " and ", female.Model.Shirt, female.FirstName.." "..female.LastName, color_white," now have a beautiful ", (sex == "Male" and Color(0,0,255) or Color(255,0,255)), (sex == "Male" and "son" or "daughter"), color_white, "!")
 						end
 					end
+					self.WillUse = nil
 					self.Humans = {}
 					self.NextThink = CurTime() + 10
 				else
-					if #self.Humans == 1 then
+					if #self.Humans == 1 or #self.Humans > 2 then
 						local human = SpaceEvo.Humans:FindByID(self.Humans[1])
 						if not human then table.RemoveByValue(self.Humans, v) return end
 						human.Task = nil

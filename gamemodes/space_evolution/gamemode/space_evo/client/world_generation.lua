@@ -234,18 +234,20 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
     local MountainInt = world == "earth" and .75 or planet and planet.MountainInt or math.Rand(0, 1) // height for mountains
 
     if not planet or not file.Exists("space_evolution/"..world.."/planet.txt", "DATA") then
-        SpaceEvo.Planets[world] = {
-            Name = name or planet and planet.Name or nil,
-            Hills = Hills,
-            Water = Water,
-            Sand = Sand,
-            WaterAmount = WaterInt,
-            MountainInt = MountainInt,
-            Humans = {},
-            Objects = {},
+        if not SpaceEvo.Planets[world] then
+            SpaceEvo.Planets[world] = {
+                Name = name or planet and planet.Name or nil,
+                Hills = Hills,
+                Water = Water,
+                Sand = Sand,
+                WaterAmount = WaterInt,
+                MountainInt = MountainInt,
+                Humans = {},
+                Objects = {},
 
-            Resources = {Iron = 0, Oil = 0, Food = 50, Wood = 100}
-        }
+                Resources = {Iron = 0, Oil = 0, Food = 50, Wood = 100}
+            }
+        end
         file.Write("space_evolution/"..world.."/planet.txt", util.TableToJSON(SpaceEvo.Planets[world], true))
         hook.Run("SpaceEvo_OnPlanetGenerated", world, SpaceEvo.Planets[world], {WorldSeed = permutation, ResourceSeed = permutation_res})
     end
@@ -301,7 +303,7 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
             bottom = k+wide
         }
         local customResource, customResourceColor = hook.Run("SpaceEvo_GenerateResources", v, World[k], neigh, world)
-        local typ = customResource or v >= .5 and "Oil" or v < .3 and v > .2 and World[k].typ == "Hills" and "Forest" or v <= .05 and v >= -.05 and World[k].typ != "Sand" and (World[k].typ == "Snow" and math.random(100)<25) and "Food" or
+        local typ = customResource or v >= .5 and "Oil" or v < .3 and v > .2 and World[k].typ == "Hills" and "Forest" or v <= .05 and v >= -.05 and World[k].typ != "Sand" and (World[k].typ == "Snow" and math.random(100)<25 or true) and "Food" or
            v <= -.40 and "Iron" or "Nothing"
 
         Resources[k] = {

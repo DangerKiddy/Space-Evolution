@@ -36,13 +36,14 @@ function SpaceEvo.Humans:Kill(humanID, isUniqueID, reason, planet)
 	else
 		hum = SpaceEvo.Planets[planet].Humans[humanID]
 	end
+	if hum.Goku then return end
 	if reason then
 		chat.AddText(hum.Model.Shirt, hum.FirstName.." "..hum.LastName, unpack(reason))
 	end
 	surface.PlaySound("space_evolution/death.wav")
 
 	hook.Run("SpaceEvo_OnHumanKilled", hum, plan)
-	table.remove(SpaceEvo.Planets[planet].Humans, humanID)
+	table.remove(SpaceEvo.Planets[plan].Humans, humanID)
 end
 
 function SpaceEvo.Humans:Create(n1, n2, sex, planet, pos, parrents)
@@ -87,12 +88,19 @@ function SpaceEvo.Humans:Create(n1, n2, sex, planet, pos, parrents)
 end
 
 function SpaceEvo.Humans:CanBeInLove(hum1, hum2)
-	return hum1 != hum2 and hum1.Sex != hum2.Sex and (
-		//(hum1.InLove == "No" and hum2.InLove == "No" or hum1.InLove == hum2.uniqueID or hum2.InLove == hum1.uniqueID) and
+	return !hum1.Goku and !hum2.Goku and
+		hum1 != hum2 and hum1.Sex != hum2.Sex and (
 			!table.HasValue(hum1.Parrents, hum2.uniqueID) and !table.HasValue(hum2.Parrents, hum1.uniqueID) and
 				(not hum1.Love and not hum2.Love or hum1.Love == hum2 or hum2.Love == hum1 or (hum1.Love and not hum2.Love) or (hum2.Love and not hum1.Love)))
 end
-
+function SpaceEvo.Humans:IsValid(uniqueID)
+	for k, v in ipairs(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans) do
+		if v.uniqueID == uniqueID then
+			return true
+		end
+	end
+	return false
+end
 function SpaceEvo.Humans:FindLove(hum1)
 	local partner
 	for k, v in ipairs(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans) do
@@ -174,7 +182,7 @@ function SpaceEvo.Humans:Think()
 			v.NextEat = CurTime() + math.random(10,15)
 		end
 
-		if (v.HP or 30) <= 0 then
+		if (v.HP or 30) <= 0 and not v.Goku then
 			chat.AddText(v.Model.Shirt, v.FirstName.." "..v.LastName, color_white, " just ", Color(255,0,0), "died", color_white, " of hunger!")
 			surface.PlaySound("space_evolution/death.wav")
 			table.remove(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans, k)
@@ -278,7 +286,6 @@ function SpaceEvo.Humans:Think()
 					v.StartedBuild = SpaceEvo.Objects:Create(v.Build, vec)
 				else
 					local obj = SpaceEvo.Planets[SpaceEvo.CurrentWorld].Objects[v.StartedBuild]
-					obj.InWater = v.InWater
 					if not obj then
 						v.Task = nil
 						v.StartedBuild = nil
@@ -288,6 +295,7 @@ function SpaceEvo.Humans:Think()
 						chat.AddText(v.Model.Shirt, v.FirstName.." "..v.LastName, color_white, " forgot what wanted to do")
 						continue
 					end
+					obj.InWater = v.InWater
 					obj.BuildState = math.Clamp(obj.BuildState+SpaceEvo.Objects[v.Build].BuildValue, 0, SpaceEvo.Objects[v.Build].BuildMaxValue)
 					if obj.BuildState >= SpaceEvo.Objects[v.Build].BuildMaxValue then
 						if not v.Target.ID then
@@ -445,7 +453,7 @@ function SpaceEvo.Humans:Think()
 						hum.InLove = v.uniqueID
 
 						for k1, v1 in pairs(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Objects) do
-							if v1.Name == "House" and #v1.Humans == 0 then
+							if v1.Name == "House" and #v1.Humans == 0 and not v1.WillUse then
 								v.Task = "Going to use "..v1.Name
 								v.NextTask = "Using "..v1.Name
 								v.Use = k1
@@ -461,6 +469,9 @@ function SpaceEvo.Humans:Think()
 									ID = aP
 								}
 								hum.Target = v.Target 
+
+								v1.WillUse = {hum.uniqueID, v.uniqueID}
+
 								break
 							end
 						end
