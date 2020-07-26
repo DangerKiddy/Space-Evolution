@@ -23,7 +23,7 @@ SpaceEvo.Objects = {
 
 			if self.NextThink <= CurTime() then
 				SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Oil = SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Oil + 1
-				self.NextThink = CurTime() + 15
+				self.NextThink = CurTime() + 10
 			end
 		end,
 
@@ -47,7 +47,7 @@ SpaceEvo.Objects = {
 
 			if self.NextThink <= CurTime() then
 				SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Iron = SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Iron + 1
-				self.NextThink = CurTime() + math.random(20,25)
+				self.NextThink = CurTime() + math.random(15,20)
 			end
 		end,
 
@@ -71,7 +71,7 @@ SpaceEvo.Objects = {
 
 			if self.NextThink <= CurTime() then
 				SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Wood = SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Wood + 1
-				self.NextThink = CurTime() + math.random(20,25)
+				self.NextThink = CurTime() + math.random(10,20)
 			end
 		end,
 
@@ -99,7 +99,7 @@ SpaceEvo.Objects = {
 
 			if self.NextThink <= CurTime() then
 				SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Food = SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Food + 1
-				self.NextThink = CurTime() + math.random(10,30)
+				self.NextThink = CurTime() + math.random(5,10)
 			end
 		end,
 

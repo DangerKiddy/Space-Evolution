@@ -8,10 +8,10 @@ end
 
 SpaceEvo.Humans.FirstName = {
 	Male = {
-		"Elon", "David", "John", "Jack", "Samuel", "Sean", "Thomas", "William", "Robert", "Ronald", "Ralph", "Philip", "Oliver", "Nathan", "Kevin", "Logan", "Jesus", "George"
+		"Elon", "David", "John", "Jack", "Samuel", "Sean", "Thomas", "William", "Robert", "Ronald", "Ralph", "Philip", "Oliver", "Nathan", "Kevin", "Logan", "Jesus", "George", "Adam", "Jamie"
 	},
 	Female = {
-		"Ada", "Alise", "Ava", "Barbara", "Caroline", "Chloe", "Daisy", "Fiona", "Gabriella", "Jane", "Joyce", "Isabella", "Lily", "Nicole", "Taylor", "Violet"
+		"Ada", "Alise", "Ava", "Barbara", "Caroline", "Chloe", "Daisy", "Fiona", "Gabriella", "Jane", "Joyce", "Isabella", "Lily", "Nicole", "Taylor", "Violet", "Savage", "Hyneman"
 	}
 }
 SpaceEvo.Humans.LastName = {
@@ -179,7 +179,7 @@ function SpaceEvo.Humans:Think()
 				SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Food = SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Food - take
 				v.HP = math.Clamp(v.HP and v.HP + 1 or 30, 0, 30)
 			end
-			v.NextEat = CurTime() + math.random(10,15)
+			v.NextEat = CurTime() + math.random(25,30)
 		end
 
 		if (v.HP or 30) <= 0 and not v.Goku then
@@ -225,7 +225,7 @@ function SpaceEvo.Humans:Think()
 					local p = SpaceEvo.Humans:GetScreenPos(v)
 					if math.floor(math.Distance(p.x, p.y, v.Target.x, v.Target.y)) <= 400 then v.Target = nil continue end
 
-					if not v.shouldFind then v.shouldFind = math.random(400-v.IQ)<=10 and CurTime() end
+					if not v.shouldFind then v.shouldFind = math.random(300-v.IQ)<=25 and CurTime() end
 					if v.shouldFind then
 						local no = hook.Run("SpaceEvo_HumanSearchingResource", v, SpaceEvo.GeneratedWorld.WorldResourcesMesh[v.Target.ID])
 						if SpaceEvo.GeneratedWorld.WorldResourcesMesh[v.Target.ID].Type == "Nothing" or no then
@@ -247,7 +247,7 @@ function SpaceEvo.Humans:Think()
 					if math.floor(math.Distance(p.x, p.y, v.Target.x, v.Target.y)) == 0 then
 						v.Task = "Researching"
 						v.TaskStart = CurTime()
-						v.TaskEnd = CurTime() + math.random(3,7)
+						v.TaskEnd = CurTime() + 3
 					end
 				end
 			elseif v.Task == "Researching" then
@@ -275,7 +275,7 @@ function SpaceEvo.Humans:Think()
 				else
 					if v.TaskEnd - CurTime() > 30 then
 						v.TaskStart = CurTime()
-						v.TaskEnd = CurTime() + math.random(3,7)
+						v.TaskEnd = CurTime() + 3
 						SpaceEvo.Humans:Print("Fixing broken human")
 					end
 				end
@@ -376,6 +376,7 @@ function SpaceEvo.Humans:Think()
 						v.Target = nil
 						v.NextTarget = nil
 						v.TaskEnd = nil
+						v.NextTask = nil
 						v.Use = nil
 					end
 				elseif obj.Name == "Rocket" then

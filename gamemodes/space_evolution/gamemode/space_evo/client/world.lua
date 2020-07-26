@@ -271,16 +271,67 @@ local function CreateFrame()
 	local Obj
 	local HumanSelected
 	local function RunStar()
-		timer.Simple(math.random(300,600), function()
-			fallingStar = {x = math.random(ScrW()/2, ScrW()), y = 50}
+		timer.Simple(math.random(100,900), function()
+			fallingStar = {x = math.random(ScrW()/2, ScrW()), y = 50, d = table.Random({
+				function()
+					surface.SetDrawColor(color_white)
+					surface.SetMaterial(star)
+					surface.DrawTexturedRectRotated(fallingStar.x, fallingStar.y, 48, 48, 0)
+				end,
+				function()
+					surface.SetDrawColor(color_white)
+					surface.SetMaterial(star)
+					surface.DrawTexturedRectRotated(fallingStar.x, fallingStar.y, 48, 48, 0)
+				end,
+				function()
+					surface.SetDrawColor(color_white)
+					surface.SetMaterial(star)
+					surface.DrawTexturedRectRotated(fallingStar.x, fallingStar.y, 48, 48, 0)
+				end,
+				function()
+					surface.SetDrawColor(color_white)
+					surface.SetMaterial(star)
+					surface.DrawTexturedRectRotated(fallingStar.x, fallingStar.y, 48, 48, 0)
+				end,
+				function()
+					surface.SetDrawColor(color_white)
+					surface.SetMaterial(star)
+					surface.DrawTexturedRectRotated(fallingStar.x, fallingStar.y, 48, 48, 0)
+				end,
+				function()
+					surface.SetDrawColor(color_white)
+					surface.SetMaterial(star)
+					surface.DrawTexturedRectRotated(fallingStar.x, fallingStar.y, 48, 48, 0)
+				end,
+				function()
+					surface.SetDrawColor(color_white)
+					surface.SetMaterial(star)
+					surface.DrawTexturedRectRotated(fallingStar.x, fallingStar.y, 48, 48, 0)
+				end,
+				function()
+					draw.SimpleText("VictorienXP", "SpaceEvo_Pixel3", fallingStar.x, fallingStar.y, color_white, 1, 1)
+				end,
+				function()
+					draw.SimpleText("Ohamis", "SpaceEvo_Pixel3", fallingStar.x, fallingStar.y, color_white, 1, 1)
+				end,
+				function()
+					draw.SimpleText("gamingmad101", "SpaceEvo_Pixel3", fallingStar.x, fallingStar.y, color_white, 1, 1)
+				end,
+				function()
+					draw.SimpleText("itsmeaddof123", "SpaceEvo_Pixel3", fallingStar.x, fallingStar.y, color_white, 1, 1)
+				end,
+				function()
+					draw.SimpleText("Ben", "SpaceEvo_Pixel3", fallingStar.x, fallingStar.y, color_white, 1, 1)
+				end,
+			})}
 			RunStar()
 		end)
 	end
 	RunStar()
 
-	timer.Create("somethingInteresting :)", 30, 0, function()
+	timer.Create("somethingInteresting :)", 60, 0, function()
 		local r = math.random(1, 1000)
-		if r == 2 and #SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans >= 50 then
+		if r == 2 and #SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans >= 50 and false then
 			if SpaceEvo.ActiveEaster then return end
 			SpaceEvo.ActiveEaster = {}
 			SpaceEvo.ActiveEaster.Name = "Dragon Ball"
@@ -495,7 +546,7 @@ local function CreateFrame()
 			timer.Simple(86, function()
 				SpaceEvo.ActiveEaster:Remove()
 			end)
-		elseif r >= 50 and r <= 200 then
+		elseif r >= 50 and r <= 60 then
 			local x, y = -70, ScrH()/3
 			local boo = false
 			local scared = false
@@ -527,7 +578,7 @@ local function CreateFrame()
 					end
 				end
 			end)
-		elseif r == 1 then
+		elseif r >= 10 and r <= 20 then
 			if #SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans >= 10 then
 				PrintRainbowText( 20, "Party time!" )
 				for k, v in ipairs(SpaceEvo.Planets[SpaceEvo.CurrentWorld].Humans) do
@@ -632,14 +683,6 @@ local function CreateFrame()
 		local d = (math.Round((SpaceEvo.CamPos or Vector()):Distance(Vector(0,0,-11500))))
 		if (d) > 0 then return end
 		hook.Run("SpaceEvo_PreFramePaint", s, w, h)
-
-		if fallingStar and fallingStar.x > 0 and fallingStar.y < h then
-			fallingStar.x = fallingStar.x - FrameTime()*1000
-			fallingStar.y = fallingStar.y + FrameTime()*600
-			surface.SetDrawColor(color_white)
-			surface.SetMaterial(star)
-			surface.DrawTexturedRectRotated(fallingStar.x, fallingStar.y, 48, 48, 0)
-		end
 
 		draw.NoTexture()
 		local mx, my = input.GetCursorPos()
@@ -784,6 +827,10 @@ local function CreateFrame()
 			if !obj then
 				local x, y = SpaceEvo:ShadowText(SpaceEvo.GeneratedWorld.WorldMesh[i].Type, "SpaceEvo_Pixel5", cc.x, cc.y-25, color_white, 1, TEXT_ALIGN_BOTTOM)
 				SpaceEvo:ShadowText("Height: "..math.Round(SpaceEvo.GeneratedWorld.WorldMesh[i].Height, 1), "SpaceEvo_Pixel5", cc.x, cc.y-25+y, color_white, 1, TEXT_ALIGN_BOTTOM)
+				if GetConVar("developer"):GetBool() then
+					SpaceEvo:ShadowText("World pos:  X: "..SpaceEvo.GeneratedWorld.WorldMesh[i].Pos.x.."; Y: "..SpaceEvo.GeneratedWorld.WorldMesh[i].Pos.y, "SpaceEvo_Pixel5", cc.x+x*2, cc.y-25, color_white, 0, TEXT_ALIGN_BOTTOM)
+				end
+
 				hook.Run("SpaceEvo_BlockPaint", i, SpaceEvo.GeneratedWorld.WorldMesh[i], cc.x, cc.y-25, y*2)
 			end
 		end
@@ -817,6 +864,12 @@ local function CreateFrame()
 		SpaceEvo:ShadowText("Food: "..SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Food, "SpaceEvo_Pixel7", w-15, 10+y+y2*2, color_white, TEXT_ALIGN_RIGHT)
 		SpaceEvo:ShadowText("Wood: "..SpaceEvo.Planets[SpaceEvo.CurrentWorld].Resources.Wood, "SpaceEvo_Pixel7", w-15, 10+y+y2*3, color_white, TEXT_ALIGN_RIGHT)
 
+
+		if fallingStar and fallingStar.x > 0 and fallingStar.y < h then
+			fallingStar.x = fallingStar.x - FrameTime()*1000
+			fallingStar.y = fallingStar.y + FrameTime()*600
+			fallingStar.d()
+		end
 		hook.Run("SpaceEvo_PostFramePaint", s, w, h, 10+y+y2*4, 10+y+y2*3)
 	end
 	frm.OnMousePressed = function(s, c)
