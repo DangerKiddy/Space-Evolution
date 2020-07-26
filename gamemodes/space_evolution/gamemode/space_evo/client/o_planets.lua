@@ -49,7 +49,7 @@ SpaceEvo.Planets:Print("Maximum possible planets: "..SpaceEvo.Planets.Maximum)
 function SpaceEvo.Planets:GenerateNewPlanet()
 	if SpaceEvo.Removing then return end
 	local name = select(1, table.Random(SpaceEvo.RandomPlanets1))..select(1, table.Random(SpaceEvo.RandomPlanets2))
-	if file.Exists("space_evolution/"..name:lower().."/seed.txt", "DATA") then
+	if SpaceEvo.Planets[name:lower()] then
 		return SpaceEvo:GenerateNewPlanet()
 	end
 	return SpaceEvo:GenerateWorld(name:lower(), name, true)
