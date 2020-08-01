@@ -303,7 +303,7 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
             bottom = k+wide
         }
         local customResource, customResourceColor = hook.Run("SpaceEvo_GenerateResources", v, World[k], neigh, world)
-        local typ = customResource or v >= .5 and "Oil" or v < .3 and v > .2 and World[k].typ == "Hills" and "Forest" or v <= .05 and v >= -.05 and World[k].typ != "Sand" and (World[k].typ == "Snow" and math.random(100)<25 or true) and "Food" or
+        local typ = customResource or v >= .4 and "Oil" or v < .3 and v > .2 and World[k].typ == "Hills" and "Forest" or v <= .05 and v >= -.05 and World[k].typ != "Sand" and (World[k].typ == "Snow" and math.random(100)<25 or true) and "Food" or
            v <= -.40 and "Iron" or "Nothing"
 
         Resources[k] = {
@@ -326,6 +326,18 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
             y = y + quadSize
             x = 0
         end
+    end
+    local res_am = {Iron = 0, Food = 0, Nothing = 0, Forest = 0, Oil = 0}
+    for k, v in pairs(Resources) do
+    	res_am[v.typ] = res_am[v.typ] and res_am[v.typ] + 1 or 1
+    end
+    if world == "earth" then
+    	for k, v in pairs(res_am) do
+    		if v <= 400 then
+    			file.Delete("space_evolution/"..world.."/seed.txt")
+    			return SpaceEvo:GenerateWorld(world, name, dontopen)
+    		end
+    	end
     end
 
     if dontopen then return SpaceEvo.Planets[world] end
