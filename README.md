@@ -3,6 +3,8 @@ Space Evolution is gamemode with procedural generation, space theme and start wi
 
 You have 2 humans at the start and you must find resources for feeding humans, crafting items and then flying away from earth and discovering other planets!
 
+Steam page: https://steamcommunity.com/sharedfiles/filedetails/?id=2191619265
+
 ## Humans
 Humans is simple AI which have special tasks. Human with low IQ just wandering around, but humans with IQ 80+ can explore the planet. Or you can force them to explore planet by clicking on them
 
