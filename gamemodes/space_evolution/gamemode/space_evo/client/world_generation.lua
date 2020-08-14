@@ -233,6 +233,8 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
     local WaterInt = planet and planet.WaterAmount or math.Rand(-1,1)
     local MountainInt = world == "earth" and .75 or planet and planet.MountainInt or math.Rand(0, 1) // height for mountains
 
+    SpaceEvo.MountainHeight = MountainInt
+
     if not planet or not file.Exists("space_evolution/"..world.."/planet.txt", "DATA") then
         if not SpaceEvo.Planets[world] then
             SpaceEvo.Planets[world] = {
@@ -391,7 +393,7 @@ if SpaceEvo.CurrentWorld == "earth" and #SpaceEvo.Planets[SpaceEvo.CurrentWorld]
     SpaceEvo.Humans:Create(table.Random(SpaceEvo.Humans.FirstName["Female"]), table.Random(SpaceEvo.Humans.LastName), "Female", SpaceEvo.CurrentWorld)
 end
 
-hook.Add( "PostDrawTranslucentRenderables", "SpaceEvo_RenderWorld", function()
+hook.Add( "PostDrawTranslucentRenderables", "SpaceEvo_RenderPlanet", function()
     if not IsValid(obj) then return end
     render.SetColorMaterial()
 
