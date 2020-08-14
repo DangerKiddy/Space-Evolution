@@ -28,6 +28,14 @@ You can modificate that gamemode as you want, you can change generation, behaivo
 ## Generation
 ### Hooks
 ```lua
+GM:SpaceEvo_GenerationFailed(PlanetName, Name, OnlyGenerate)
+```
+*Calls **only** for earth when generation is failed(Not enough resources was generated)*
+- PlanetName(string): Name of folder of planet. Example: "earth"
+- Name(string): Name of planet. Example: "Earth"
+- OnlyGenerate(bool): Means that planet will be **only** generated, without visiting that planet 
+
+```lua
 GM:SpaceEvo_PlanetStartLoading(PlanetName, Name, OnlyGenerate)
 ```
 *Calls when planet starts loading*
