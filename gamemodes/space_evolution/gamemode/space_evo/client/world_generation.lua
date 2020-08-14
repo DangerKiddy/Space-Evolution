@@ -334,6 +334,8 @@ function SpaceEvo:GenerateWorld(world, name, dontopen)
     if world == "earth" then
     	for k, v in pairs(res_am) do
     		if v <= 400 then
+    			SpaceEvo.Planets:Print("Generation failed, starting new")
+    			hook.Run("SpaceEvo_GenerationFailed", world, name)
     			file.Delete("space_evolution/"..world.."/seed.txt")
     			return SpaceEvo:GenerateWorld(world, name, dontopen)
     		end
@@ -389,7 +391,7 @@ if SpaceEvo.CurrentWorld == "earth" and #SpaceEvo.Planets[SpaceEvo.CurrentWorld]
     SpaceEvo.Humans:Create(table.Random(SpaceEvo.Humans.FirstName["Female"]), table.Random(SpaceEvo.Humans.LastName), "Female", SpaceEvo.CurrentWorld)
 end
 
-hook.Add( "PostDrawTranslucentRenderables", "DrawQuad_Example", function()
+hook.Add( "PostDrawTranslucentRenderables", "SpaceEvo_RenderWorld", function()
     if not IsValid(obj) then return end
     render.SetColorMaterial()
 
@@ -403,7 +405,7 @@ hook.Add( "PostDrawTranslucentRenderables", "DrawQuad_Example", function()
 end)
 local z = 0
 SpaceEvo.CamToZ = -11500
-hook.Add( "CalcView", "MyCalcView", function(ply, pos, ang, fov)
+hook.Add( "CalcView", "SpaceEvo_CalcView", function(ply, pos, ang, fov)
     z = Lerp(FrameTime(), z, SpaceEvo.CamToZ)
 
     local view = {}
